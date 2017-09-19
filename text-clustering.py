@@ -1,8 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplot
 
 from sklearn.cluster import KMeans
-from sklearn.datasets import make_blobs
+from sklearn.decomposition import PCA
 
 def readData(textFile):
     file = open(textFile)
@@ -77,7 +77,23 @@ def vectorizedMatrix (distinctWordList,textMsgDictionary):
 data= readData("topusers.txt")
 
 textMsgDictionary = textParsing(data)
+
 distinctWordList = getDistinctWords(textMsgDictionary)
 print(distinctWordList)
-print(vectorizedMatrix (distinctWordList,textMsgDictionary))
+
+matrix = vectorizedMatrix(distinctWordList,textMsgDictionary)
+print(matrix)
+ 
+
+## clustering data using Kmeans and PCA
+X = np.array(matrix)
+reduced_data = PCA(n_components=2).fit_transform(X)
+kmeans = KMeans(n_clusters=7, random_state=0).fit_predict(reduced_data)
+
+pyplot.scatter(reduced_data[:, 0], reduced_data[:, 1], c=kmeans)
+
+pyplot.show()
+
+
+
 

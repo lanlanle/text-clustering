@@ -20,9 +20,9 @@ def textParsing (data):
         textMsgDictionary[subdata[0]]= subdata[1:]
     return textMsgDictionary
 
-## rewrite this function os that it works with punctuation
+
 def textMsgConversion(msg):
-    #remove unwanted characters
+       #remove unwanted characters
     i = 0
     msg_length = len(msg)
     msg = msg.lower()
@@ -67,38 +67,83 @@ def textVectorization (distinctWordList,msg):
             vector.append(0)
     return vector
 
-def vectorizedMatrix (distinctWordList,textMsgDictionary):
+def vectorizedDictionary (distinctWordList,textMsgDictionary):
     print(len(distinctWordList))
-    vectorizedMatrix = []
+    vectorizedDictionary= {}
     for user in  textMsgDictionary:
+        vectorizedMatrix = []
         for msg in textMsgDictionary[user]:
             vector = textVectorization(distinctWordList,msg)
             vectorizedMatrix.append(vector)
-    return vectorizedMatrix
-            
+        vectorizedDictionary[user] = vectorizedMatrix
+    return vectorizedDictionary
+
+def getMaxLength(vectorDict):
+    lenList = []
+    for user in vectorDict:
+        length = len(vectorDict[user])
+        lenList.append(length)
+    return max(lenList)
+
+
+def transformData(vectorDict):
+    transformedVectorDict= {}
+    for key in vectorDict:
+        X = np.array(vectorDict[key])
+        print("numpy array: ", X)
+        reduced_data = PCA(n_components=3).fit_transform(X) #data scatter differently on different runs
+        print("reduced data: ", reduced_data)
+        transformedVectorDict[key] = reduced_data
+    return transformedVectorDict
+
+           
 data= readData("topusers.txt")
-
 textMsgDictionary = textParsing(data)
-
 distinctWordList = getDistinctWords(textMsgDictionary)
 print(distinctWordList)
+vectorDict = vectorizedDictionary(distinctWordList,textMsgDictionary)
+print(vectorDict)
+transformedVectorDict = transformData(vectorDict)
 
-matrix = vectorizedMatrix(distinctWordList,textMsgDictionary)
-print(matrix)
+maxLength = getMaxLength(transformedVectorDict)
+print(maxLength)
 
+
+##for key in vectorDict:
+##    print(key)
+##    X = np.array(vectorDict[key])
+##    print("numpy array: ", X)
+##    reduced_data = PCA(n_components=2).fit_transform(X) #data scatter differently on different runs
+##    print("reduced data: ", reduced_data)
+##    pyplot.scatter(reduced_data[:, 0], reduced_data[:, 1],label=key ) #why cannot display label?
+##pyplot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+##pyplot.show()
 
 fig = pyplot.figure()
 ax = fig.add_subplot(111, projection='3d')
 
-# clustering data using Kmeans and PCA
-X = np.array(matrix)
-reduced_data = PCA(n_components=3).fit_transform(X)
-kmeans = KMeans(n_clusters=7, random_state=0).fit_predict(reduced_data)
-ax.scatter(reduced_data[:, 0], reduced_data[:, 1],reduced_data[:, 2], c=kmeans)
 
+key_list= []
+for key in transformedVectorDict:
+    key_list.append(key)
+
+print(key_list)
+
+color_list= ["blue","pink","green","orange","red","yellow","purple"]
+
+
+reduced_data = transformedVectorDict[key_list[6]]
+ax.scatter(reduced_data[:, 0], reduced_data[:, 1], reduced_data[:, 1], color=color_list[6] ) 
+
+
+# for i in range(maxLength):
+#     for j in range(len(key_list)):
+#             if i < len(transformedVectorDict[key_list[j]]):
+#                 ax.scatter(transformedVectorDict[key_list[j]][i][0], transformedVectorDict[key_list[j]][i][1], transformedVectorDict[key_list[j]][i][2], color=color_list[j]) 
 pyplot.show()
 
-##what to do next: text the precision of the clustering in k-means algorithm 
-##reduce dimension of data then test group them with the texters' identification 
+    
+
+
 
 
